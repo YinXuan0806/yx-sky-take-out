@@ -52,9 +52,16 @@ public interface DishMapper {
     Dish getById(Long id);
 
     /**
-     *
+     *修改菜品
      * @param dish
      */
     @AutoFill(OperationType.UPDATE)
     void updateDish(Dish dish);
+
+    /**
+     * 动态条件查询菜品
+     * @param dish
+     * @return
+     */
+    List<Dish> list(Dish dish);
 }

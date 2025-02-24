@@ -87,7 +87,7 @@ public class DishServiceImpl implements DishService {
             }
         }
         //判断是否有关联套餐
-            List<Long> setmealIds = setmealDishMapper.getsetmealIdsByDishIds(ids);
+            List<Long> setmealIds = setmealDishMapper.getSetmealIdsByDishIds(ids);
             if (setmealIds != null && setmealIds.size() > 0) {
                 throw new DeletionNotAllowedException(MessageConstant.DISH_BE_RELATED_BY_SETMEAL);
             }
@@ -140,5 +140,32 @@ public class DishServiceImpl implements DishService {
             });
             dishFlavorMapper.insertBatch(flavors);
         }
+    }
+
+    /**
+     * 根据分类id查询菜品
+     * @param categoryId
+     * @return
+     */
+    @Override
+    public List<Dish> list(Long categoryId) {
+        Dish dish = Dish.builder()
+                .categoryId(categoryId)
+                .status(StatusConstant.ENABLE)
+                .build();
+        return dishMapper.list(dish);
+    }
+
+    /**
+     * 菜品起售、停售
+     * @param status
+     */
+    @Override
+    public void startOrStop(Integer status,Long id) {
+        Dish dish = Dish.builder()
+                .id(id)
+                .status(status)
+                .build();
+        dishMapper.updateDish(dish);
     }
 }
