@@ -32,6 +32,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 订单业务层
@@ -175,6 +176,12 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 用户取消订单
+     * 业务规则：
+     * - 待支付和待接单状态下，用户可直接取消订单
+     * - 商家已接单状态下，用户取消订单需电话沟通商家
+     * - 派送中状态下，用户取消订单需电话沟通商家
+     * - 如果在待接单状态下取消订单，需要给用户退款
+     * - 取消订单后需要将订单状态修改为“已取消”
      * @param id
      * @throws Exception
      */
@@ -215,5 +222,33 @@ public class OrderServiceImpl implements OrderService {
         orders.setCancelTime(LocalDateTime.now());
         orderMapper.update(orders);
 
+    }
+
+    /**
+     * 再来一单
+     *再来一单就是将原订单中的商品重新加入到购物车中
+     * @param id
+     */
+    public void repetition(Long id) {
+        // 查询当前用户id
+        Long userId = BaseContext.getCurrentId();
+
+        // 根据订单id查询当前订单详情
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(id);
+
+        // 将订单详情对象转换为购物车对象
+        List<ShoppingCart> shoppingCartList = orderDetailList.stream().map(x -> {
+            ShoppingCart shoppingCart = new ShoppingCart();
+
+            // 将原订单详情里面的菜品信息重新复制到购物车对象中
+            BeanUtils.copyProperties(x, shoppingCart, "id");
+            shoppingCart.setUserId(userId);
+            shoppingCart.setCreateTime(LocalDateTime.now());
+
+            return shoppingCart;
+        }).collect(Collectors.toList());
+
+        // 将购物车对象批量添加到数据库
+        shoppingCartMapper.insertBatch(shoppingCartList);
     }
 }
