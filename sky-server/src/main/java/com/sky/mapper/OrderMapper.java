@@ -7,6 +7,9 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Mapper
 public interface OrderMapper {
 
@@ -16,6 +19,19 @@ public interface OrderMapper {
      * @return
      */
     void insert(Orders order);
+
+    /**
+     * 根据订单号查询订单
+     * @param orderNumber
+     */
+    @Select("select * from orders where number = #{orderNumber}")
+    Orders getByNumber(String orderNumber);
+
+    /**
+     * 修改订单信息
+     * @param orders
+     */
+    void update(Orders orders);
 
     /**
      * 分页条件查询并按下单时间排序
@@ -32,8 +48,11 @@ public interface OrderMapper {
     Orders getById(Long id);
 
     /**
-     * 修改订单
-     * @param orders
+     * 根据订单状态和下单时间查询订单
+     * @param status
+     * @param orderTime
+     * @return
      */
-    void update(Orders orders);
+    @Select("select * from orders where status = #{status} and order_time = #{orderTime}")
+    List<Orders> getByStatusAndOrderTimeLT(Integer status, LocalDateTime orderTime);
 }
